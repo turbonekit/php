@@ -1,7 +1,7 @@
 <?php
 	$now = time();
-    $birthday = mktime(0, 0, 0, 10, 02, 2006);
-    $hour = getdate()['hours'];
+	$birthday = mktime(0, 0, 0, 10, 02, 2006);
+	$hour = getdate($now)['hours'];
 ?>
 <!DOCTYPE html>
 <html lang="ru">
@@ -14,47 +14,49 @@
 <body>
 	<h1>Использование функций даты и времени</h1>
 	<?php
-	if ($hour >= 0 && $hour < 6)
-        $welcome = 'Доброй ночи';
-    elseif ($hour >= 6 && $hour < 12)
-        $welcome = 'Доброе утро';
-    elseif ($hour >= 12 && $hour < 18)
-        $welcome = 'Добрый день';
-    elseif ($hour >= 18 && $hour < 23)
-        $welcome = 'Добрый вечер';
-    else
-        $welcome = 'Доброй ночи';
+	if ($hour >= 0 && $hour < 6) {
+		$welcome = 'Доброй ночи';
+	} elseif ($hour >= 6 && $hour < 12) {
+		$welcome = 'Доброе утро';
+	} elseif ($hour >= 12 && $hour < 18) {
+		$welcome = 'Добрый день';
+	} elseif ($hour >= 18 && $hour < 23) {
+		$welcome = 'Добрый вечер';
+	} else {
+		$welcome = 'Доброй ночи';
+	}
+	echo $welcome . '<br>';
 
-    setlocale(LC_TIME, 'ru_RU.UTF-8');
+	setlocale(LC_TIME, 'ru_RU.UTF-8');
 
-    $fmt = datefmt_create(
-        'ru_RU',
-        IntlDateFormatter::FULL,
-        IntlDateFormatter::FULL,
-        'Europe/Moscow',
-        IntlDateFormatter::GREGORIAN,
-        "Сегодня d MMMM Y года, EEEE H:mm:ss"
-    );
+	$formatter = new IntlDateFormatter(
+		'ru_RU',
+		IntlDateFormatter::LONG,
+		IntlDateFormatter::MEDIUM,
+		null,
+		IntlDateFormatter::GREGORIAN,
+		"d MMMM y 'года', EEEE HH:mm:ss"
+	);
+	echo 'Сегодня ' . datefmt_format($formatter, $now) . '<br>';
 
-    $formattedDate = datefmt_format($fmt, $now);
+	echo 'До моего дня рождения осталось ' . '<br>';
 
-    $timeToBirthday = $birthday - $now;
+	$birthMonth = (int)date('n', $birthday);
+	$birthDay   = (int)date('j', $birthday);
 
-    //если др уже прошёл, устанавливаем на следующий год
-    if ($timeToBirthday < 0) {
-        $birthday = mktime(0, 0, 0, 10, 02, (int)date('Y', $now));
-        $timeToBirthday = $birthday - $now;
-    }
-    $days = floor($timeToBirthday / (60 * 60 * 24));
-    $hours = floor(($timeToBirthday % (60 * 60 * 24)) / (60 * 60));
-    $minutes = floor(($timeToBirthday % (60 * 60)) / 60);
-    $seconds = $timeToBirthday % 60;
+	$birthdayThisYear = mktime(0, 0, 0, $birthMonth, $birthDay, (int)date('Y', $now));
+	if ($birthdayThisYear < $now) {
+		$birthdayThisYear = mktime(0, 0, 0, $birthMonth, $birthDay, (int)date('Y', $now) + 1);
+	}
 
-    ?>
+	$diff = $birthdayThisYear - $now;
 
-    <p><?= $welcome ?>
-    <p><?= $formattedDate ?>
-    <p>До моего дня рождения: <?= "$days дней, $hours часов, $minutes минут, $seconds секунд" ?>
+	$days    = floor($diff / 86400);
+	$hours   = floor(($diff % 86400) / 3600);
+	$minutes = floor(($diff % 3600) / 60);
+	$seconds = $diff % 60;
+
+	echo $days . ' дн. ' . $hours . ' ч. ' . $minutes . ' мин. ' . $seconds . ' сек.';
 	?>
 </body>
 </html>
